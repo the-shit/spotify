@@ -1,0 +1,14 @@
+{
+    "name": "Spotify",
+    "description": "THE SHIT Spotify integration",
+    "version": "2.0.0",
+    "executable": "spotify",
+    "commands": {
+        "spotify:setup": "Set up Spotify API credentials",
+        "spotify:login": "Authenticate with Spotify",
+        "spotify:pause": "Pause Spotify playback",
+        "spotify:play": "Start Spotify playback",
+        "spotify:skip": "Skip to next or previous track",
+        "spotify:current": "Show current track"
+    }
+}
