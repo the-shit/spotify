@@ -1,41 +1,106 @@
-<p align="center">
-    <img title="Laravel Zero" height="100" src="https://raw.githubusercontent.com/laravel-zero/docs/master/images/logo/laravel-zero-readme.png" alt="Laravel Zero Logo" />
-</p>
+# 💩 Spotify Component
 
-<p align="center">
-  <a href="https://github.com/laravel-zero/framework/actions"><img src="https://github.com/laravel-zero/laravel-zero/actions/workflows/tests.yml/badge.svg" alt="Build Status" /></a>
-  <a href="https://packagist.org/packages/laravel-zero/framework"><img src="https://img.shields.io/packagist/dt/laravel-zero/framework.svg" alt="Total Downloads" /></a>
-  <a href="https://packagist.org/packages/laravel-zero/framework"><img src="https://img.shields.io/packagist/v/laravel-zero/framework.svg?label=stable" alt="Latest Stable Version" /></a>
-  <a href="https://packagist.org/packages/laravel-zero/framework"><img src="https://img.shields.io/packagist/l/laravel-zero/framework.svg" alt="License" /></a>
-</p>
+> **S**tream **P**ower **O**ver **T**he **I**nternet, **F**orever **Y**ours
 
-Laravel Zero was created by [Nuno Maduro](https://github.com/nunomaduro) and [Owen Voke](https://github.com/owenvoke), and is a micro-framework that provides an elegant starting point for your console application. It is an **unofficial** and customized version of Laravel optimized for building command-line applications.
+## Here It Is
 
-- Built on top of the [Laravel](https://laravel.com) components.
-- Optional installation of Laravel [Eloquent](https://laravel-zero.com/docs/database/), Laravel [Logging](https://laravel-zero.com/docs/logging/) and many others.
-- Supports interactive [menus](https://laravel-zero.com/docs/build-interactive-menus/) and [desktop notifications](https://laravel-zero.com/docs/send-desktop-notifications/) on Linux, Windows & MacOS.
-- Ships with a [Scheduler](https://laravel-zero.com/docs/task-scheduling/) and  a [Standalone Compiler](https://laravel-zero.com/docs/build-a-standalone-application/).
-- Integration with [Collision](https://github.com/nunomaduro/collision) - Beautiful error reporting
-- Follow the creator Nuno Maduro:
-    - YouTube: **[youtube.com/@nunomaduro](https://www.youtube.com/@nunomaduro)** — Videos every weekday
-    - Twitch: **[twitch.tv/enunomaduro](https://www.twitch.tv/enunomaduro)** — Streams (almost) every weekday
-    - Twitter / X: **[x.com/enunomaduro](https://x.com/enunomaduro)**
-    - LinkedIn: **[linkedin.com/in/nunomaduro](https://www.linkedin.com/in/nunomaduro)**
-    - Instagram: **[instagram.com/enunomaduro](https://www.instagram.com/enunomaduro)**
-    - Tiktok: **[tiktok.com/@enunomaduro](https://www.tiktok.com/@enunomaduro)**
+A Spotify control component for THE SHIT (Scaling Humans Into Tomorrow). Command-line music control that keeps you in your flow. No context switching, no distractions, just pure control over your soundtrack.
 
-------
+## The Essentials
 
-## Documentation
+- **Playback Control** - Play, pause, skip, previous. Direct and immediate.
+- **Smart Search** - Find tracks, artists, albums, playlists instantly
+- **Queue Management** - See what's coming, add what should be next
+- **Device Switching** - Control any device from your terminal
+- **Now Playing** - Current track info without leaving your workspace
+- **Persistent Auth** - Authenticate once, control indefinitely
 
-For full documentation, visit [laravel-zero.com](https://laravel-zero.com/).
+## Installation
 
-## Support the development
-**Do you like this project? Support it by donating**
+```bash
+# From THE SHIT core
+php 💩 component:install spotify
 
-- PayPal: [Donate](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=66BYDWAT92N6L)
-- Patreon: [Donate](https://www.patreon.com/nunomaduro)
+# Or standalone
+git clone https://github.com/the-shit/spotify.git 💩-components/spotify
+cd 💩-components/spotify
+composer install
+```
+
+## Setup
+
+```bash
+# Configure Spotify credentials
+php spotify setup
+
+# Authenticate with Spotify
+php spotify login
+```
+
+Requirements:
+- Spotify Premium account
+- App credentials from [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
+- Active Spotify session on any device
+
+## Commands
+
+```bash
+# Playback
+php spotify play                    # Resume playback
+php spotify pause                   # Pause playback
+php spotify skip                    # Next track
+php spotify previous                # Previous track
+
+# Search & Play
+php spotify play "search query"     # Quick search and play
+php spotify play --artist "name"    # Play artist radio
+php spotify play --album "title"    # Play full album
+php spotify play --playlist "mood"  # Play playlist
+
+# Queue
+php spotify queue                   # View upcoming tracks
+php spotify queue "track name"      # Add to queue
+
+# Info
+php spotify current                 # Currently playing
+
+# Devices
+php spotify devices                 # List available devices
+php spotify devices --switch <id>   # Switch playback device
+```
+
+## Human-AI Collaboration
+
+Output adapts to context:
+
+```bash
+# JSON for automation
+CONDUIT_USER_AGENT=ai php spotify current
+
+# Formatted for humans
+php spotify current
+```
+
+## Architecture
+
+- **Laravel Zero** - Micro-framework foundation
+- **OAuth 2.0 + PKCE** - Secure authentication flow
+- **Token Persistence** - Seamless session management
+- **Event Bus** - Component communication within THE SHIT
+- **Smart Defaults** - Works out of the box
+
+## The SHIT Philosophy
+
+Tools should amplify, not complicate. This component gives you direct control over your music without the overhead. It's about maintaining momentum, staying in your zone, and letting the music flow while you work.
+
+## Contributing
+
+Found something? Fixed something? Open a PR. Keep it clean, keep it focused.
 
 ## License
 
-Laravel Zero is an open-source software licensed under the MIT license.
+MIT - Use it, modify it, ship it.
+
+---
+
+*For those who know that the right soundtrack makes everything better.*
