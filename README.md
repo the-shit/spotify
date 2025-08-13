@@ -161,6 +161,29 @@ Displays:
 - Device information
 - Playback state (playing/paused)
 
+### spotify:volume - Volume Control
+```bash
+php 💩 spotify:volume         # Show current volume
+php 💩 spotify:volume 42      # Set volume to 42%
+php 💩 spotify:volume 0       # Mute
+php 💩 spotify:volume +10     # Increase by 10%
+php 💩 spotify:volume -20     # Decrease by 20%
+```
+
+Features:
+- Absolute volume setting (0-100)
+- Relative volume changes (+/-)
+- Visual progress bar display
+- Dynamic volume icons (🔇🔈🔉🔊)
+- Event emission for volume changes
+
+### spotify:queue - Queue Management
+```bash
+php 💩 spotify:queue "track name"  # Add track to queue
+```
+
+Adds tracks to play after the current song without interrupting playback.
+
 ## Developer Experience Excellence
 
 ### Beautiful Error Messages
