@@ -1,7 +1,7 @@
 {
     "name": "Spotify",
     "description": "THE SHIT Spotify integration",
-    "version": "2.1.0",
+    "version": "0.0.1",
     "executable": "spotify",
     "commands": {
         "spotify:setup": "Set up Spotify API credentials",
