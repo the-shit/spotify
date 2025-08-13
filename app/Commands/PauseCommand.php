@@ -12,7 +12,7 @@ class PauseCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'pause';
+    protected $signature = 'pause {--json : Output as JSON}';
 
     /**
      * The console command description.
@@ -36,28 +36,50 @@ class PauseCommand extends Command
             return self::FAILURE;
         }
 
-        $this->info('⏸️  Pausing Spotify playback...');
+        if (!$this->option('json')) {
+            $this->info('⏸️  Pausing Spotify playback...');
+        }
 
         try {
             // Get current track before pausing
             $current = $spotify->getCurrentPlayback();
 
             $spotify->pause();
-            $this->info('✅ Playback paused!');
-
-            // Emit pause event
-            if ($current) {
-                $this->call('event:emit', [
-                    'event' => 'track.paused',
-                    'data' => json_encode([
-                        'track' => $current['name'],
+            
+            if ($this->option('json')) {
+                $this->line(json_encode([
+                    'success' => true,
+                    'paused' => true,
+                    'track' => $current ? [
+                        'name' => $current['name'],
                         'artist' => $current['artist'],
-                        'paused_at' => $current['progress_ms'],
-                    ]),
-                ]);
+                        'paused_at' => $current['progress_ms']
+                    ] : null
+                ]));
+            } else {
+                $this->info('✅ Playback paused!');
+                
+                // Emit pause event
+                if ($current) {
+                    $this->call('event:emit', [
+                        'event' => 'track.paused',
+                        'data' => json_encode([
+                            'track' => $current['name'],
+                            'artist' => $current['artist'],
+                            'paused_at' => $current['progress_ms'],
+                        ]),
+                    ], true);
+                }
             }
         } catch (\Exception $e) {
-            $this->error('❌ Failed to pause: '.$e->getMessage());
+            if ($this->option('json')) {
+                $this->line(json_encode([
+                    'success' => false,
+                    'error' => $e->getMessage()
+                ]));
+            } else {
+                $this->error('❌ Failed to pause: '.$e->getMessage());
+            }
 
             return self::FAILURE;
         }

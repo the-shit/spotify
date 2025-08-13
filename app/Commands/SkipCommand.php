@@ -10,7 +10,9 @@ use function Laravel\Prompts\info;
 
 class SkipCommand extends Command
 {
-    protected $signature = 'skip {direction? : next or prev (default: next)}';
+    protected $signature = 'skip 
+                            {direction? : next or prev (default: next)}
+                            {--json : Output as JSON}';
 
     protected $description = 'Skip to next or previous track';
 
@@ -31,35 +33,63 @@ class SkipCommand extends Command
 
             if ($direction === 'prev' || $direction === 'previous') {
                 $spotify->previous();
-                info('⏮️  Skipped to previous track');
+                $skippedDirection = 'previous';
+                $emoji = '⏮️';
             } else {
                 $spotify->next();
-                info('⏭️  Skipped to next track');
+                $skippedDirection = 'next';
+                $emoji = '⏭️';
             }
 
             // Show what's playing now
             sleep(1); // Give Spotify a moment to update
             $current = $spotify->getCurrentPlayback();
-            if ($current) {
-                info("🎵 Now playing: {$current['name']} by {$current['artist']}");
+            
+            if ($this->option('json')) {
+                $this->line(json_encode([
+                    'success' => true,
+                    'direction' => $skippedDirection,
+                    'previous' => $before ? [
+                        'name' => $before['name'],
+                        'artist' => $before['artist'],
+                        'progress_ms' => $before['progress_ms'] ?? 0
+                    ] : null,
+                    'current' => $current ? [
+                        'name' => $current['name'],
+                        'artist' => $current['artist'],
+                        'album' => $current['album']
+                    ] : null
+                ]));
+            } else {
+                info("{$emoji}  Skipped to {$skippedDirection} track");
+                if ($current) {
+                    info("🎵 Now playing: {$current['name']} by {$current['artist']}");
+                }
             }
 
             // Emit skip event
-            if ($before) {
+            if ($before && !$this->option('json')) {
                 $this->call('event:emit', [
                     'event' => 'track.skipped',
                     'data' => json_encode([
                         'track' => $before['name'],
                         'artist' => $before['artist'],
                         'skip_at' => $before['progress_ms'],
-                        'direction' => $direction === 'prev' ? 'previous' : 'next',
+                        'direction' => $skippedDirection,
                     ]),
-                ]);
+                ], true);
             }
 
             return self::SUCCESS;
         } catch (\Exception $e) {
-            error('❌ '.$e->getMessage());
+            if ($this->option('json')) {
+                $this->line(json_encode([
+                    'success' => false,
+                    'error' => $e->getMessage()
+                ]));
+            } else {
+                error('❌ '.$e->getMessage());
+            }
 
             return self::FAILURE;
         }

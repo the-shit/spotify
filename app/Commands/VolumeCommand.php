@@ -79,17 +79,16 @@ class VolumeCommand extends Command
             return self::FAILURE;
         }
 
-        // Emit event
-        $this->call('event:emit', [
-            'event' => 'volume.changed',
-            'data' => json_encode([
-                'volume' => $newVolume,
-            ]),
-        ]);
-
         if ($this->option('json')) {
             $this->line(json_encode(['volume' => $newVolume, 'success' => true]));
         } else {
+            // Emit event
+            $this->call('event:emit', [
+                'event' => 'volume.changed',
+                'data' => json_encode([
+                    'volume' => $newVolume,
+                ]),
+            ], true);
             $icon = $this->getVolumeIcon($newVolume);
             $this->info("{$icon} Volume set to {$newVolume}%");
             $this->showVolumeBar($newVolume);

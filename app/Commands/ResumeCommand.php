@@ -7,7 +7,9 @@ use LaravelZero\Framework\Commands\Command;
 
 class ResumeCommand extends Command
 {
-    protected $signature = 'resume {--device= : Device name or ID to resume on}';
+    protected $signature = 'resume 
+                            {--device= : Device name or ID to resume on}
+                            {--json : Output as JSON}';
 
     protected $description = 'Resume Spotify playback from where it was paused';
 
@@ -44,7 +46,9 @@ class ResumeCommand extends Command
             }
         }
 
-        $this->info('▶️  Resuming Spotify playback...');
+        if (!$this->option('json')) {
+            $this->info('▶️  Resuming Spotify playback...');
+        }
 
         try {
             // If device specified, transfer playback first
@@ -57,34 +61,54 @@ class ResumeCommand extends Command
             // Get current track info for event
             $current = $spotify->getCurrentPlayback();
 
-            // Emit resume event
-            $this->call('event:emit', [
-                'event' => 'track.resumed',
-                'data' => json_encode([
-                    'track' => $current['name'] ?? null,
-                    'artist' => $current['artist'] ?? null,
+            if ($this->option('json')) {
+                $this->line(json_encode([
+                    'success' => true,
+                    'resumed' => true,
                     'device_id' => $deviceId,
-                ]),
-            ]);
+                    'track' => $current ? [
+                        'name' => $current['name'],
+                        'artist' => $current['artist'],
+                        'album' => $current['album']
+                    ] : null
+                ]));
+            } else {
+                // Emit resume event
+                $this->call('event:emit', [
+                    'event' => 'track.resumed',
+                    'data' => json_encode([
+                        'track' => $current['name'] ?? null,
+                        'artist' => $current['artist'] ?? null,
+                        'device_id' => $deviceId,
+                    ]),
+                ], true);
 
-            if ($current) {
-                $this->info("🎵 Resumed: {$current['name']} by {$current['artist']}");
+                if ($current) {
+                    $this->info("🎵 Resumed: {$current['name']} by {$current['artist']}");
+                }
+
+                $this->info('✅ Playback resumed!');
             }
 
-            $this->info('✅ Playback resumed!');
-
         } catch (\Exception $e) {
-            $this->error('Failed to resume: '.$e->getMessage());
+            if ($this->option('json')) {
+                $this->line(json_encode([
+                    'success' => false,
+                    'error' => $e->getMessage()
+                ]));
+            } else {
+                $this->error('Failed to resume: '.$e->getMessage());
 
-            // Emit error event
-            $this->call('event:emit', [
-                'event' => 'error.playback_failed',
-                'data' => json_encode([
-                    'command' => 'resume',
-                    'action' => 'resume',
-                    'error' => $e->getMessage(),
-                ]),
-            ]);
+                // Emit error event
+                $this->call('event:emit', [
+                    'event' => 'error.playback_failed',
+                    'data' => json_encode([
+                        'command' => 'resume',
+                        'action' => 'resume',
+                        'error' => $e->getMessage(),
+                    ]),
+                ], true);
+            }
 
             return self::FAILURE;
         }

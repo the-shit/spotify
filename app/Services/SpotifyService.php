@@ -464,6 +464,7 @@ class SpotifyService
 
         if ($response->successful()) {
             $data = $response->json();
+
             return $data['items'] ?? [];
         }
 
@@ -486,6 +487,7 @@ class SpotifyService
 
         if ($response->successful()) {
             $data = $response->json();
+
             return $data['items'] ?? [];
         }
 
@@ -530,6 +532,7 @@ class SpotifyService
 
         if ($response->successful()) {
             $data = $response->json();
+
             return [
                 'currently_playing' => $data['currently_playing'] ?? null,
                 'queue' => $data['queue'] ?? [],
@@ -560,7 +563,7 @@ class SpotifyService
         if ($response->successful()) {
             $data = $response->json();
             $results = [];
-            
+
             if (isset($data['tracks']['items'])) {
                 foreach ($data['tracks']['items'] as $track) {
                     $results[] = [
@@ -571,11 +574,50 @@ class SpotifyService
                     ];
                 }
             }
-            
+
             return $results;
         }
 
         return [];
+    }
+
+    /**
+     * Set shuffle state
+     */
+    public function setShuffle(bool $state): bool
+    {
+        if (! $this->accessToken) {
+            throw new \Exception('Not authenticated. Run "spotify:login" first.');
+        }
+
+        $this->ensureValidToken();
+
+        $response = Http::withToken($this->accessToken)
+            ->put($this->baseUri.'me/player/shuffle?state='.($state ? 'true' : 'false'));
+
+        return $response->successful();
+    }
+
+    /**
+     * Set repeat mode
+     */
+    public function setRepeat(string $state): bool
+    {
+        if (! $this->accessToken) {
+            throw new \Exception('Not authenticated. Run "spotify:login" first.');
+        }
+
+        $this->ensureValidToken();
+
+        // State can be: off, track, context
+        if (! in_array($state, ['off', 'track', 'context'])) {
+            throw new \Exception('Invalid repeat state. Use: off, track, or context');
+        }
+
+        $response = Http::withToken($this->accessToken)
+            ->put($this->baseUri.'me/player/repeat?state='.$state);
+
+        return $response->successful();
     }
 
     /**
@@ -603,6 +645,8 @@ class SpotifyService
                     'progress_ms' => $data['progress_ms'] ?? 0,
                     'duration_ms' => $data['item']['duration_ms'] ?? 0,
                     'is_playing' => $data['is_playing'] ?? false,
+                    'shuffle_state' => $data['shuffle_state'] ?? false,  // Include shuffle state
+                    'repeat_state' => $data['repeat_state'] ?? 'off',  // Include repeat state
                     'device' => $data['device'] ?? null,  // Include device info
                 ];
             }
