@@ -21,7 +21,7 @@ class PlayerCommand extends Command
 
     public function handle()
     {
-        $this->spotify = new SpotifyService;
+        $this->spotify = app(SpotifyService::class);
 
         if (! $this->spotify->isConfigured()) {
             $this->error('❌ Spotify is not configured');

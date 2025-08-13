@@ -26,7 +26,7 @@ class PauseCommand extends Command
      */
     public function handle()
     {
-        $spotify = new SpotifyService;
+        $spotify = app(SpotifyService::class);
 
         if (! $spotify->isConfigured()) {
             $this->error('❌ Spotify is not configured');

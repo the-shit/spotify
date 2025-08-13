@@ -17,7 +17,7 @@ class PlayCommand extends Command
 
     public function handle()
     {
-        $spotify = new SpotifyService;
+        $spotify = app(SpotifyService::class);
 
         if (! $spotify->isConfigured()) {
             $this->error('❌ Spotify is not configured');
@@ -80,6 +80,16 @@ class PlayCommand extends Command
                             ],
                             'search_query' => $query
                         ]));
+                        // Still emit the event but suppress output
+                        $this->callSilently('event:emit', [
+                            'event' => 'track.queued',
+                            'data' => json_encode([
+                                'track' => $result['name'],
+                                'artist' => $result['artist'],
+                                'uri' => $result['uri'],
+                                'search_query' => $query,
+                            ]),
+                        ]);
                     } else {
                         $this->info("➕ Added to queue: {$result['name']} by {$result['artist']}");
                         $this->info('📋 It will play after the current track');
@@ -93,7 +103,7 @@ class PlayCommand extends Command
                                 'uri' => $result['uri'],
                                 'search_query' => $query,
                             ]),
-                        ], true);
+                        ]);
                     }
                 } else {
                     // Play immediately
@@ -111,6 +121,16 @@ class PlayCommand extends Command
                             'device_id' => $deviceId,
                             'search_query' => $query
                         ]));
+                        // Still emit the event but suppress output
+                        $this->callSilently('event:emit', [
+                            'event' => 'track.played',
+                            'data' => json_encode([
+                                'track' => $result['name'],
+                                'artist' => $result['artist'],
+                                'uri' => $result['uri'],
+                                'search_query' => $query,
+                            ]),
+                        ]);
                     } else {
                         $this->info("▶️  Playing: {$result['name']} by {$result['artist']}");
 
@@ -123,7 +143,7 @@ class PlayCommand extends Command
                                 'uri' => $result['uri'],
                                 'search_query' => $query,
                             ]),
-                        ], true);
+                        ]);
                     }
                 }
             } else {
@@ -155,7 +175,7 @@ class PlayCommand extends Command
                         'action' => 'play',
                         'error' => $e->getMessage(),
                     ]),
-                ], true);
+                ]);
             }
 
             return self::FAILURE;

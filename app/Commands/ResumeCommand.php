@@ -15,7 +15,7 @@ class ResumeCommand extends Command
 
     public function handle()
     {
-        $spotify = new SpotifyService;
+        $spotify = app(SpotifyService::class);
 
         if (! $spotify->isConfigured()) {
             $this->error('❌ Spotify is not configured');
@@ -72,6 +72,15 @@ class ResumeCommand extends Command
                         'album' => $current['album']
                     ] : null
                 ]));
+                // Still emit the event but suppress output
+                $this->callSilently('event:emit', [
+                    'event' => 'track.resumed',
+                    'data' => json_encode([
+                        'track' => $current['name'] ?? null,
+                        'artist' => $current['artist'] ?? null,
+                        'device_id' => $deviceId,
+                    ]),
+                ]);
             } else {
                 // Emit resume event
                 $this->call('event:emit', [
@@ -81,7 +90,7 @@ class ResumeCommand extends Command
                         'artist' => $current['artist'] ?? null,
                         'device_id' => $deviceId,
                     ]),
-                ], true);
+                ]);
 
                 if ($current) {
                     $this->info("🎵 Resumed: {$current['name']} by {$current['artist']}");
@@ -107,7 +116,7 @@ class ResumeCommand extends Command
                         'action' => 'resume',
                         'error' => $e->getMessage(),
                     ]),
-                ], true);
+                ]);
             }
 
             return self::FAILURE;

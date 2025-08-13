@@ -15,7 +15,7 @@ class VolumeCommand extends Command
 
     public function handle()
     {
-        $spotify = new SpotifyService;
+        $spotify = app(SpotifyService::class);
 
         if (! $spotify->isConfigured()) {
             $this->error('❌ Spotify is not configured');
@@ -81,6 +81,13 @@ class VolumeCommand extends Command
 
         if ($this->option('json')) {
             $this->line(json_encode(['volume' => $newVolume, 'success' => true]));
+            // Still emit the event but suppress output
+            $this->callSilently('event:emit', [
+                'event' => 'volume.changed',
+                'data' => json_encode([
+                    'volume' => $newVolume,
+                ]),
+            ]);
         } else {
             // Emit event
             $this->call('event:emit', [
@@ -88,7 +95,7 @@ class VolumeCommand extends Command
                 'data' => json_encode([
                     'volume' => $newVolume,
                 ]),
-            ], true);
+            ]);
             $icon = $this->getVolumeIcon($newVolume);
             $this->info("{$icon} Volume set to {$newVolume}%");
             $this->showVolumeBar($newVolume);

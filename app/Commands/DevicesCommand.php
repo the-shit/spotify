@@ -18,7 +18,7 @@ class DevicesCommand extends Command
 
     public function handle()
     {
-        $spotify = new SpotifyService;
+        $spotify = app(SpotifyService::class);
 
         if (! $spotify->isConfigured()) {
             error('❌ Spotify not configured');
