@@ -447,6 +447,138 @@ class SpotifyService
     }
 
     /**
+     * Get user's playlists
+     */
+    public function getPlaylists(int $limit = 20): array
+    {
+        if (! $this->accessToken) {
+            return [];
+        }
+
+        $this->ensureValidToken();
+
+        $response = Http::withToken($this->accessToken)
+            ->get($this->baseUri.'me/playlists', [
+                'limit' => $limit,
+            ]);
+
+        if ($response->successful()) {
+            $data = $response->json();
+            return $data['items'] ?? [];
+        }
+
+        return [];
+    }
+
+    /**
+     * Get playlist tracks
+     */
+    public function getPlaylistTracks(string $playlistId): array
+    {
+        if (! $this->accessToken) {
+            return [];
+        }
+
+        $this->ensureValidToken();
+
+        $response = Http::withToken($this->accessToken)
+            ->get($this->baseUri."playlists/{$playlistId}/tracks");
+
+        if ($response->successful()) {
+            $data = $response->json();
+            return $data['items'] ?? [];
+        }
+
+        return [];
+    }
+
+    /**
+     * Play a playlist
+     */
+    public function playPlaylist(string $playlistId, ?string $deviceId = null): bool
+    {
+        if (! $this->accessToken) {
+            return false;
+        }
+
+        $this->ensureValidToken();
+
+        $device = $deviceId ?: $this->getActiveDevice()['id'] ?? null;
+
+        $response = Http::withToken($this->accessToken)
+            ->put($this->baseUri.'me/player/play', [
+                'device_id' => $device,
+                'context_uri' => "spotify:playlist:{$playlistId}",
+            ]);
+
+        return $response->successful();
+    }
+
+    /**
+     * Get queue
+     */
+    public function getQueue(): array
+    {
+        if (! $this->accessToken) {
+            return [];
+        }
+
+        $this->ensureValidToken();
+
+        $response = Http::withToken($this->accessToken)
+            ->get($this->baseUri.'me/player/queue');
+
+        if ($response->successful()) {
+            $data = $response->json();
+            return [
+                'currently_playing' => $data['currently_playing'] ?? null,
+                'queue' => $data['queue'] ?? [],
+            ];
+        }
+
+        return [];
+    }
+
+    /**
+     * Search with multiple results
+     */
+    public function searchMultiple(string $query, string $type = 'track', int $limit = 10): array
+    {
+        if (! $this->accessToken) {
+            throw new \Exception('Not authenticated. Run "spotify:login" first.');
+        }
+
+        $this->ensureValidToken();
+
+        $response = Http::withToken($this->accessToken)
+            ->get($this->baseUri.'search', [
+                'q' => $query,
+                'type' => $type,
+                'limit' => $limit,
+            ]);
+
+        if ($response->successful()) {
+            $data = $response->json();
+            $results = [];
+            
+            if (isset($data['tracks']['items'])) {
+                foreach ($data['tracks']['items'] as $track) {
+                    $results[] = [
+                        'uri' => $track['uri'],
+                        'name' => $track['name'],
+                        'artist' => $track['artists'][0]['name'] ?? 'Unknown',
+                        'album' => $track['album']['name'] ?? 'Unknown',
+                    ];
+                }
+            }
+            
+            return $results;
+        }
+
+        return [];
+    }
+
+    /**
      * Get current playback state
      */
     public function getCurrentPlayback(): ?array

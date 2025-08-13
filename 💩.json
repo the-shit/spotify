@@ -13,6 +13,7 @@
         "spotify:resume": "Resume paused playback",
         "spotify:skip": "Skip to next or previous track",
         "spotify:current": "Show current track",
-        "spotify:volume": "Control Spotify volume"
+        "spotify:volume": "Control Spotify volume",
+        "spotify:player": "Interactive player with visual controls"
     }
 }
