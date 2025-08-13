@@ -7,7 +7,11 @@ use LaravelZero\Framework\Commands\Command;
 
 class PlayCommand extends Command
 {
-    protected $signature = 'play {query : Song, artist, or playlist to play} {--device= : Device name or ID to play on} {--queue : Add to queue instead of playing immediately}';
+    protected $signature = 'play 
+                            {query : Song, artist, or playlist to play} 
+                            {--device= : Device name or ID to play on} 
+                            {--queue : Add to queue instead of playing immediately}
+                            {--json : Output as JSON}';
 
     protected $description = 'Play a specific song/artist/playlist (use "resume" to continue paused playback)';
 
@@ -53,7 +57,9 @@ class PlayCommand extends Command
             }
         }
 
-        $this->info("🎵 Searching for: {$query}");
+        if (!$this->option('json')) {
+            $this->info("🎵 Searching for: {$query}");
+        }
 
         try {
             $result = $spotify->search($query);
@@ -62,57 +68,102 @@ class PlayCommand extends Command
                 if ($this->option('queue')) {
                     // Add to queue instead of playing
                     $spotify->addToQueue($result['uri']);
-                    $this->info("➕ Added to queue: {$result['name']} by {$result['artist']}");
-                    $this->info('📋 It will play after the current track');
+                    
+                    if ($this->option('json')) {
+                        $this->line(json_encode([
+                            'success' => true,
+                            'action' => 'queued',
+                            'track' => [
+                                'name' => $result['name'],
+                                'artist' => $result['artist'],
+                                'uri' => $result['uri']
+                            ],
+                            'search_query' => $query
+                        ]));
+                    } else {
+                        $this->info("➕ Added to queue: {$result['name']} by {$result['artist']}");
+                        $this->info('📋 It will play after the current track');
 
-                    // Emit queue event
-                    $this->call('event:emit', [
-                        'event' => 'track.queued',
-                        'data' => json_encode([
-                            'track' => $result['name'],
-                            'artist' => $result['artist'],
-                            'uri' => $result['uri'],
-                            'search_query' => $query,
-                        ]),
-                    ]);
+                        // Emit queue event
+                        $this->call('event:emit', [
+                            'event' => 'track.queued',
+                            'data' => json_encode([
+                                'track' => $result['name'],
+                                'artist' => $result['artist'],
+                                'uri' => $result['uri'],
+                                'search_query' => $query,
+                            ]),
+                        ], true);
+                    }
                 } else {
                     // Play immediately
-                    $this->info("▶️  Playing: {$result['name']} by {$result['artist']}");
                     $spotify->play($result['uri'], $deviceId);
+                    
+                    if ($this->option('json')) {
+                        $this->line(json_encode([
+                            'success' => true,
+                            'action' => 'playing',
+                            'track' => [
+                                'name' => $result['name'],
+                                'artist' => $result['artist'],
+                                'uri' => $result['uri']
+                            ],
+                            'device_id' => $deviceId,
+                            'search_query' => $query
+                        ]));
+                    } else {
+                        $this->info("▶️  Playing: {$result['name']} by {$result['artist']}");
 
-                    // Emit play event
-                    $this->call('event:emit', [
-                        'event' => 'track.played',
-                        'data' => json_encode([
-                            'track' => $result['name'],
-                            'artist' => $result['artist'],
-                            'uri' => $result['uri'],
-                            'search_query' => $query,
-                        ]),
-                    ]);
+                        // Emit play event
+                        $this->call('event:emit', [
+                            'event' => 'track.played',
+                            'data' => json_encode([
+                                'track' => $result['name'],
+                                'artist' => $result['artist'],
+                                'uri' => $result['uri'],
+                                'search_query' => $query,
+                            ]),
+                        ], true);
+                    }
                 }
             } else {
-                $this->warn("No results found for: {$query}");
+                if ($this->option('json')) {
+                    $this->line(json_encode([
+                        'success' => false,
+                        'error' => "No results found for: {$query}"
+                    ]));
+                } else {
+                    $this->warn("No results found for: {$query}");
+                }
 
                 return self::FAILURE;
             }
         } catch (\Exception $e) {
-            $this->error('Failed to play: '.$e->getMessage());
+            if ($this->option('json')) {
+                $this->line(json_encode([
+                    'success' => false,
+                    'error' => $e->getMessage()
+                ]));
+            } else {
+                $this->error('Failed to play: '.$e->getMessage());
 
-            // Emit error event
-            $this->call('event:emit', [
-                'event' => 'error.playback_failed',
-                'data' => json_encode([
-                    'command' => 'play',
-                    'action' => 'play',
-                    'error' => $e->getMessage(),
-                ]),
-            ]);
+                // Emit error event
+                $this->call('event:emit', [
+                    'event' => 'error.playback_failed',
+                    'data' => json_encode([
+                        'command' => 'play',
+                        'action' => 'play',
+                        'error' => $e->getMessage(),
+                    ]),
+                ], true);
+            }
 
             return self::FAILURE;
         }
 
-        $this->info('✅ Playback started!');
+        if (!$this->option('json')) {
+            $this->info('✅ Playback started!');
+        }
 
         return self::SUCCESS;
     }

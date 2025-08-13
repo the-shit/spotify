@@ -14,6 +14,8 @@
         "spotify:skip": "Skip to next or previous track",
         "spotify:current": "Show current track",
         "spotify:volume": "Control Spotify volume",
-        "spotify:player": "Interactive player with visual controls"
+        "spotify:player": "Interactive player with visual controls",
+        "spotify:shuffle": "Toggle or set shuffle mode",
+        "spotify:repeat": "Set repeat mode (off/track/context)"
     }
 }
